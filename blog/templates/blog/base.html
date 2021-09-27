@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+ <title>{% block title %}{% endblock %}</title>
+ <link href="{% static "blog.css" %}" rel="stylesheet">
+</head>
+<body>
+    <div id="content">
+        {% block content %}
+    
+        {% endblock %}
+    </div>
+    <div id="sidebar">
+        <h2>My blog</h2>
+        <a href='export/'>
+        <h2>Export Data To CSV</h2>
+    </a>
+        <p>This is my blog.</p>
+    </div>
+</body>
+</html>
