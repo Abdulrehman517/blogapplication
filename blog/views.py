@@ -1,13 +1,15 @@
-from django.http.response import HttpResponse
-from django.shortcuts import render, get_object_or_404
-from .models import Post, Comment
-from django.views.generic import ListView
 import csv
-from .forms import EmailPostForm, CommentForm
+import pandas
 from django.core.mail import send_mail
-
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.http.response import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls.base import reverse
+from django.views.generic import ListView
 from taggit.models import Tag
+
+from .forms import CommentForm, EmailPostForm
+from .models import Comment, Post
 
 
 def post_list(request, tag_slug=None):
@@ -16,7 +18,7 @@ def post_list(request, tag_slug=None):
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)
         object_list = object_list.filter(tags__in=[tag])
-    paginator = Paginator(object_list, 3) # 3 posts in each page
+    paginator = Paginator(object_list, 6) # 3 posts in each page
     page = request.GET.get('page')
     try:
         posts = paginator.page(page)
@@ -67,6 +69,75 @@ def export_blog(request):
         writer.writerow(post)
 
     return response
+
+
+def upload_csv(request):
+    if request.method == "GET":
+        return render(request, 'blog/post/upload_csv.html', )
+
+    else:
+        file = request.FILES['csv_file']
+        if not file.name.endswith('.csv'):
+            return HttpResponse('File is not CSV type')
+        # dataframe = pandas.read_csv(file)
+        # print(dataframe)
+        df = pandas.read_csv(file)
+        for index, row in df.iterrows():
+            data_dict = {'title': row['Title'], 'slug': row['Slug'], 'Author': row['Author'], 'Body': row['Body'],
+                         'Publish': row['Publish'], 'Status': row['Status']}
+
+        Post.objects.create(title=data_dict["title"], slug=data_dict["slug"], body=data_dict["Body"],
+                            author_id=data_dict["Author"], publish=data_dict['Publish'], status=data_dict['Status'])
+
+        return HttpResponse('Upload Successfull!')
+
+
+
+        #
+        # file_data = csv_file.read().decode("utf-8")
+        # lines = file_data.split("\n")
+        # for line in lines:
+        #     fields = line.split(',')
+        #     data_dict = {}
+        #     data_dict["title"] = fields[0]
+        #     data_dict["slug"] = fields[0]
+        #     data_dict["author"] = fields[2]
+        #     data_dict["body"] = fields[3]
+        #     data_dict["publish"] = fields[4]
+        #     data_dict["status"] = fields[5]
+        # Post.objects.create(title=data_dict["title"], slug=data_dict["slug"], body=data_dict["body"],
+        #                     author_id=data_dict["author"], publish=data_dict['publish'], status=data_dict['status'])
+        # return HttpResponse('Upload Successfull!')
+
+
+# data = {}
+    # if request.method == "GET":
+    #     return render(request, 'blog/post/upload_csv.html', data)
+    #
+    # else:
+    #     csv_file = request.FILES['csv_file']
+    #     if not csv_file.name.endswith('.csv'):
+    #         return HttpResponse('File is not CSV type')
+    #         # return redirect('/blog/upload_csv')
+    # #if file is too large, return
+    #     # if csv_file.multiple_chunks():
+    #     #         return HttpResponse(request,"Uploaded file is too big (%.2f MB)." % (csv_file.size/(1000*1000),))
+    #     #         # return HttpResponseRedirect('blog/')
+    #
+    #     file_data = csv_file.read().decode("utf-8")
+    #     lines = file_data.split("\n")
+    #     for line in lines:
+    #         fields = line.split(',')
+    #         data_dict = {}
+    #         data_dict["title"] = fields[0]
+    #         data_dict["slug"] = fields[0]
+    #         data_dict["author"] = fields[2]
+    #         data_dict["body"] = fields[3]
+    #         data_dict["publish"] = fields[4]
+    #         data_dict["status"] = fields[5]
+    #     Post.objects.create(title=data_dict["title"], slug=data_dict["slug"], body=data_dict["body"], author_id=data_dict["author"], publish=data_dict['publish'], status=data_dict['status'])
+    #     return HttpResponse('Upload Successfull!')
+    #
 
 def post_share(request, post_id):
     post = get_object_or_404(Post, id=post_id, status='published')
