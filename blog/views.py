@@ -73,23 +73,22 @@ def export_blog(request):
 
 def upload_csv(request):
     if request.method == "GET":
-        return render(request, 'blog/post/upload_csv.html', )
+        return render(request, 'blog/post/upload_csv.html',)
 
     else:
         file = request.FILES['csv_file']
         if not file.name.endswith('.csv'):
             return HttpResponse('File is not CSV type')
-        # dataframe = pandas.read_csv(file)
-        # print(dataframe)
         df = pandas.read_csv(file)
         for index, row in df.iterrows():
-            data_dict = {'title': row['Title'], 'slug': row['Slug'], 'Author': row['Author'], 'Body': row['Body'],
+            data_dict = {'title': row['Title'], 'slug': row['Title'], 'Author': row['Author'], 'Body': row['Body'],
                          'Publish': row['Publish'], 'Status': row['Status']}
 
             Post.objects.create(title=data_dict["title"], slug=data_dict["slug"], body=data_dict["Body"],
                             author_id=data_dict["Author"], publish=data_dict['Publish'], status=data_dict['Status'])
 
-        return HttpResponse('Upload Successfull!')
+        # return HttpResponse('Upload Successfull!')
+        return render(request, 'blog/post/succes.html', )
 
 
 
