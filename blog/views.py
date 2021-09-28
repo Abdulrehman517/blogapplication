@@ -86,7 +86,7 @@ def upload_csv(request):
             data_dict = {'title': row['Title'], 'slug': row['Slug'], 'Author': row['Author'], 'Body': row['Body'],
                          'Publish': row['Publish'], 'Status': row['Status']}
 
-        Post.objects.create(title=data_dict["title"], slug=data_dict["slug"], body=data_dict["Body"],
+            Post.objects.create(title=data_dict["title"], slug=data_dict["slug"], body=data_dict["Body"],
                             author_id=data_dict["Author"], publish=data_dict['Publish'], status=data_dict['Status'])
 
         return HttpResponse('Upload Successfull!')
