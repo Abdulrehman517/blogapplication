@@ -4,10 +4,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Post
-from .serializers import PostSerializer
+from .serializers import PostSerializer, UploadCsvSerializer
+
 
 class PostView(APIView):
-
     def get(self, request):
         id = request.query_params.get('id', None)
         if id:
@@ -21,7 +21,6 @@ class PostView(APIView):
             post = Post.objects.all()
             serializer = PostSerializer(post, many=True)
             return Response(serializer.data)
- 
 
     def post(self, request):
         serializer = PostSerializer(data=request.data)
@@ -53,3 +52,9 @@ class PostView(APIView):
         else:
             return Response({'Detail': 'Post Already Deleted!'})
 
+
+class UploadCSV(APIView):
+    def post(self, request):
+        serializer = UploadCsvSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return  Response({'detail': 'uploaded!'})

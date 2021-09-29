@@ -14,7 +14,6 @@ from .models import Comment
 from api.models import Post
 
 
-
 def post_list(request, tag_slug=None):
     object_list = Post.objects.all()
     tag = None
@@ -64,6 +63,7 @@ def post_detail(request, year, month, day, post):
     similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4]
     return render(request, 'blog/post/detail.html', {'post': post, 'comment_form': comment_form, 'comments':comments, 'new_comment':new_comment, 'similar_posts':similar_posts})
 
+
 def export_blog(request):
     response = HttpResponse(
         content_type='text/csv',
@@ -71,8 +71,8 @@ def export_blog(request):
     )
 
     writer = csv.writer(response)
-    writer.writerow(['Title', 'Slug', 'Author', 'Body', 'Publish'])
-    for post in Post.objects.all().values_list('title', 'slug', 'author','body','publish'):
+    writer.writerow(['Title', 'Slug', 'Author', 'Body', 'Publish', 'status'])
+    for post in Post.objects.all().values_list('title', 'slug', 'author', 'body', 'publish', 'status'):
         writer.writerow(post)
 
     return response
